@@ -65,7 +65,6 @@ const TicketBuilder = (props) => {
     }
 
     const editTicket = () => {
-
         Validate(["ticketTitle", "ticketInfo"]);
         if (document.querySelector(".error")) {
             props.showAlert("You are missing fields information.", "danger");
@@ -123,7 +122,6 @@ const TicketBuilder = (props) => {
 
 
     }
-
     useEffect(() => {
         if (loaded === false) {
             props.getTickets(props.userEmail);
