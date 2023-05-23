@@ -6,14 +6,13 @@ const WorkFlow = (props) => {
     let [func, setFunc] = useState("add");
     let [loaded, setLoaded] = useState(false);
     let [stepsData, setStepsData] = useState([]);
-    //[{ stepTitle: "title one", stepPrice: "3 days", tasks: ["gather info:waiting", "list goals:complete"] }]
+    //[{ stepTitle: "title one", stepPrice: "3 days", tasks: ["gather info:not-complete", "list goals:complete"] }]
     let [confirm, setConfirm] = useState("");
     let [onDeckDelete, setOnDeckDelete] = useState("");
     let [activeStep, setActiveStep] = useState(null);
     let [activeTaskList, setActiveTaskList] = useState("add/delete tasks");
     let [ticketSelected, setTicketSelected] = useState("default");
     let [existingData, setExistingData] = useState(false);
-
 
 
     const updateStep = (newStep) => {
@@ -203,46 +202,9 @@ const WorkFlow = (props) => {
     }
 
     const selectStep = (stepNum) => {
-        let statusList = [];
-        for (let i = 0; i < stepsData[stepNum].tasks.length; i++) {
-            statusList.push(stepsData[stepNum].tasks[i].substring(stepsData[stepNum].tasks[i].indexOf(":") + 1))
-        }
-        console.log("statusList: " + statusList);
-
         setActiveStep((activeStep) => stepNum);
         setActiveTaskList((activeTaskList) => stepsData[stepNum].tasks);
-
     }
-
-    /*const ckForComplete = (stepNum, taskNum) => {
- 
-         let tempTaskObj = stepsData;
-         let ckNeeded = tempTaskObj[stepNum].tasks.length;
-         let counter = 0;
-         if (tempTaskObj[stepNum].tasks[taskNum].indexOf(":waiting") !== -1) {
-             tempTaskObj[stepNum].tasks[taskNum] = tempTaskObj[stepNum].tasks[taskNum].replace(":waiting", ":complete");
-         } else {
-             tempTaskObj[stepNum].tasks[taskNum] = tempTaskObj[stepNum].tasks[taskNum].replace(":complete", ":waiting");
-         }
- 
-         let taskListObj = [];
-         for (let i = 0; i < tempTaskObj[stepNum].tasks.length; i++) {
-             taskListObj.push(tempTaskObj[stepNum].tasks[i]);
-             if (tempTaskObj[stepNum].tasks[i].indexOf(":waiting") === -1) {
-                 counter = counter + 1;
-             }
-         }
- 
-         if (ckNeeded === counter) {
-             document.querySelector(".col[data-step='" + stepNum + "'] .card").classList.add("alert-success");
-         } else {
-             document.querySelector(".col[data-step='" + stepNum + "'] .card").classList.remove("alert-success");
-         }
- 
-         setActiveTaskList((activeTaskList) => taskListObj);
-         updateStep(false);
-     }*/
-
 
 
     const removeTask = (taskNum) => {
@@ -270,15 +232,16 @@ const WorkFlow = (props) => {
             props.showAlert("Write a task", "warning");
             return false;
         } else {
-            tempList = [...tempList, document.querySelector("[name='addTask']").value + ":waiting"];
+            tempList = [...tempList, document.querySelector("[name='addTask']").value + ":not-complete"];
             setActiveTaskList((activeTaskList) => tempList);
             tempData[activeStep].tasks = tempList;
             document.querySelector("[name='addTask']").value = "";
 
         }
     }
-    const updateStatus = (task) => {
 
+
+    const updateStatus = (task) => {
         let tempActiveTaskList = activeTaskList;
         const status = document.querySelector("[name='taskStatus-" + task + "']").value;
         if (status === "default") {
@@ -287,36 +250,30 @@ const WorkFlow = (props) => {
 
         if (tempActiveTaskList[task].indexOf(":") !== -1) {
 
-
             tempActiveTaskList[task] = tempActiveTaskList[task].substring(0, tempActiveTaskList[task].indexOf(":"));
-
 
             switch (status) {
                 case "waiting":
-
                     tempActiveTaskList[task] = tempActiveTaskList[task] + ":waiting";
                     break;
                 case "hold":
-
                     tempActiveTaskList[task] = tempActiveTaskList[task] + ":hold";
                     break;
                 case "in-progress":
-
                     tempActiveTaskList[task] = tempActiveTaskList[task] + ":in-progress";
                     break;
                 case "review":
-
                     tempActiveTaskList[task] = tempActiveTaskList[task] + ":review";
                     break;
                 case "complete":
-
                     tempActiveTaskList[task] = tempActiveTaskList[task] + ":complete";
                     break;
             }
-            console.log("activeTaskList: " + activeTaskList)
+
             setActiveTaskList((activeTaskList) => tempActiveTaskList);
         }
     }
+
 
     useEffect(() => {
         if (loaded === false) {
@@ -324,8 +281,6 @@ const WorkFlow = (props) => {
             setLoaded((loaded) => true);
         }
     }, []);
-
-
 
     return (
 
@@ -389,7 +344,8 @@ const WorkFlow = (props) => {
                                     step.tasks.toString().indexOf(":hold") === -1 &&
                                         step.tasks.toString().indexOf(":review") === -1 &&
                                         step.tasks.toString().indexOf(":in-progress") === -1 &&
-                                        step.tasks.toString().indexOf(":waiting") === -1
+                                        step.tasks.toString().indexOf(":waiting") === -1 &&
+                                        step.tasks.toString().indexOf("add/delete tasks") === -1
                                         ? "card mb-4 rounded-3 shadow-sw alert-success" : "card mb-4 rounded-3 shadow-sw alert-secondary"}
                                     id={step.stepTitle.replace(" ", "-") + "-card"}>
 
@@ -423,11 +379,9 @@ const WorkFlow = (props) => {
                                                         if (task.indexOf(":complete") !== -1) {
                                                             colorCode = "success";
                                                         }
-
-
-
                                                         return (<li key={j} className={"list-group-item list-group-item-" + colorCode} data-step={step.stepTitle}
                                                             name={task.substring(0, task.indexOf(":"))} >{task}</li>)
+
                                                     }) : null}
                                                 </ul>
                                             </div>
@@ -435,10 +389,9 @@ const WorkFlow = (props) => {
 
                                             <ul className="list-group">
                                                 {(typeof activeTaskList) === "object" ? activeTaskList.map((task, j) => {
-                                                    return (<li className="list-group-item list-group-item-secondary" key={j} data-remove={task} >{task}
+                                                    return (<li className="list-group-item list-group-item-secondary" key={j} data-remove={task} >{task} <i className="fas fa-trash pointer"
+                                                        key={i} onClick={() => removeTask(j)}></i>
 
-                                                        <i className="fas fa-trash pointer"
-                                                            key={i} onClick={() => removeTask(j)}></i>
                                                         <select name={"taskStatus-" + j} className="form-control" onChange={() => updateStatus(j)}>
                                                             <option value="default">Select Task Status</option>
                                                             <option value="waiting">Waiting</option>
@@ -456,8 +409,6 @@ const WorkFlow = (props) => {
                                                 </div>
                                             </ul>
                                         }
-
-
                                     </div>
 
                                     <div className="card-footer text-muted">
@@ -473,9 +424,6 @@ const WorkFlow = (props) => {
                     : null}
 
             </div>
-
-
-
 
         </React.Fragment >)
 
